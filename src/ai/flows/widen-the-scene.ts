@@ -24,7 +24,7 @@ const WidenTheSceneOutputSchema = z.object({
   widenedSceneImage: z
     .string()
     .describe(
-      'A widened scene image as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' 
+      'A widened scene image as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
     ),
 });
 export type WidenTheSceneOutput = z.infer<typeof WidenTheSceneOutputSchema>;
@@ -32,23 +32,6 @@ export type WidenTheSceneOutput = z.infer<typeof WidenTheSceneOutputSchema>;
 export async function widenTheScene(input: WidenTheSceneInput): Promise<WidenTheSceneOutput> {
   return widenTheSceneFlow(input);
 }
-
-const widenTheScenePrompt = ai.definePrompt({
-  name: 'widenTheScenePrompt',
-  input: {schema: WidenTheSceneInputSchema},
-  output: {schema: WidenTheSceneOutputSchema},
-  prompt: [
-    {
-      media: {url: '{{{restoredImage}}}'},
-    },
-    {
-      text: `Using the provided reference image as the focal point, generate a new image that shows a wider-angle view. Expand the original scene to reveal more of the surrounding environment, ensuring the new details seamlessly match the style, lighting, and era of the reference photo.`,
-    },
-  ],
-  config: {
-    responseModalities: ['IMAGE'],
-  },
-});
 
 const widenTheSceneFlow = ai.defineFlow(
   {
@@ -58,13 +41,20 @@ const widenTheSceneFlow = ai.defineFlow(
   },
   async input => {
     const {media} = await ai.generate({
-      prompt: await widenTheScenePrompt(input),
+      prompt: [
+        {
+          media: {url: input.restoredImage},
+        },
+        {
+          text: `Using the provided reference image as the focal point, generate a new image that shows a wider-angle view. Expand the original scene to reveal more of the surrounding environment, ensuring the new details seamlessly match the style, lighting, and era of the reference photo.`,
+        },
+      ],
       model: 'googleai/gemini-2.5-flash-image-preview',
       config: {
         responseModalities: ['IMAGE', 'TEXT'],
       },
     });
 
-    return {widenedSceneImage: media!.url};
+    return {widenedSceneImage: media!.url!};
   }
 );
