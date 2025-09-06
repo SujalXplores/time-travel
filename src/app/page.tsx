@@ -110,7 +110,7 @@ export default function Home() {
         }
 
         if (newImage) {
-            setGeneratedImages(prev => [...prev, newImage]);
+            setGeneratedImages(prev => [newImage, ...prev]);
         } else {
             throw new Error(`Re-imagination of type '${type}' failed to produce an image.`);
         }
@@ -128,13 +128,18 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
-      <header className="py-8 md:py-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-center font-headline text-primary-foreground opacity-80">
-          Echoes of Time
-        </h1>
+    <div className="flex flex-col min-h-screen bg-transparent text-foreground font-body">
+      <header className="py-12 md:py-16">
+        <div className="container mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold font-headline">
+            Echoes of Time
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground mt-2">
+                Restore and re-imagine your old family photos with AI.
+            </p>
+        </div>
       </header>
-      <main className="flex-grow container mx-auto px-4 pb-8">
+      <main className="flex-grow container mx-auto px-4 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           <UploadPanel
             originalImage={originalImage}
@@ -150,7 +155,7 @@ export default function Home() {
           />
         </div>
       </main>
-      <footer className="text-center p-4 text-sm text-muted-foreground">
+      <footer className="text-center p-6 text-sm text-muted-foreground">
         <p>Powered by Firebase and Google AI</p>
       </footer>
     </div>
