@@ -85,25 +85,27 @@ export default function Home() {
 
     try {
         let newImage: string | undefined;
+        // The most recent image is the best candidate for modification
+        const referenceImage = generatedImages[0] || restoredMasterImage;
 
         switch (type) {
             case 'moment': {
-                const result = await reimagineAnotherMoment({ restoredMasterImage });
+                const result = await reimagineAnotherMoment({ restoredMasterImage: referenceImage });
                 newImage = result.reimaginedImage;
                 break;
             }
             case 'smile': {
-                const result = await generateSubtleSmile({ referenceImage: restoredMasterImage });
+                const result = await generateSubtleSmile({ referenceImage });
                 newImage = result.newImage;
                 break;
             }
             case 'pose': {
-                const result = await createDifferentPose({ restoredMasterImage });
+                const result = await createDifferentPose({ restoredMasterImage: referenceImage });
                 newImage = result.generatedImage;
                 break;
             }
             case 'widen': {
-                const result = await widenTheScene({ restoredImage: restoredMasterImage });
+                const result = await widenTheScene({ restoredImage: referenceImage });
                 newImage = result.widenedSceneImage;
                 break;
             }
@@ -127,15 +129,26 @@ export default function Home() {
     }
   };
 
+  const handleDownload = (image: string, index: number) => {
+    const link = document.createElement('a');
+    link.href = image;
+    const fileType = image.startsWith('data:image/png') ? 'png' : 'jpg';
+    const fileName = index === generatedImages.length - 1 ? 'restored_master' : `echo_${generatedImages.length - index}`;
+    link.download = `${fileName}.${fileType}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-transparent text-foreground font-body">
       <header className="py-12 md:py-16">
         <div className="container mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold font-headline">
+            <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-wide">
             Echoes of Time
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mt-2">
-                Restore and re-imagine your old family photos with AI.
+            <p className="text-lg md:text-xl text-muted-foreground mt-2 max-w-2xl mx-auto">
+                Breathe new life into your cherished memories. Restore, recolor, and reimagine your old family photos with the power of AI.
             </p>
         </div>
       </header>
@@ -150,6 +163,7 @@ export default function Home() {
             generatedImages={generatedImages}
             restoredMasterImage={restoredMasterImage}
             onReimagine={handleReimagine}
+            onDownload={handleDownload}
             loadingFlow={loadingFlow}
             isLoading={loadingFlow === 'restoring'}
           />

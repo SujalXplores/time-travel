@@ -1,4 +1,3 @@
-// src/ai/flows/generate-subtle-smile.ts
 'use server';
 
 /**
@@ -46,7 +45,7 @@ const generateSubtleSmileFlow = ai.defineFlow(
         prompt: [
             {media: {url: input.referenceImage}},
             {
-            text: 'Using the provided reference image, regenerate the image but change the expression of the main subject to a subtle, natural, and happy smile. All other elements of the image, including other people and the background, must remain identical.',
+            text: 'You are an expert digital artist specializing in photorealistic facial expressions. Using the provided reference image, regenerate the image but delicately alter the expression of the main subject to a subtle, natural, and happy smile. The smile should be gentle and authentic, engaging the eyes (a "Duchenne smile"). All other elements of the image, including the subject\'s identity, other people, clothing, and the background, must remain absolutely identical. Preserve the original lighting and photographic style.',
             },
         ],
         config: {

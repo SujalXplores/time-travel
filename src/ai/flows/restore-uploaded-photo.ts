@@ -40,7 +40,7 @@ const restoreUploadedPhotoFlow = ai.defineFlow(
       prompt: [
         {media: {url: input.photoDataUri}},
         {
-          text: 'Take this user-uploaded photograph. Fully restore it to a high-resolution, photorealistic color image. Meticulously fix all physical damage including scratches, tears, dust, and fading. Correct any color cast and yellowing from age to reveal the original, natural colors.',
+          text: 'You are a world-class digital restoration artist. Take this user-uploaded photograph, which may be old, damaged, or in black and white. Your task is to perform a masterful restoration. Fully restore it to a high-resolution, vibrant, and photorealistic color image. Meticulously fix all physical damage including scratches, tears, dust, stains, and fading. If the photo is black and white, intelligently colorize it with historically accurate and natural colors. Correct any color cast and yellowing from age to reveal the original, true-to-life colors. Enhance the clarity and detail without making it look artificial. The final result should be a pristine, timeless version of the original memory.',
         },
       ],
       model: 'googleai/gemini-2.5-flash-image-preview',

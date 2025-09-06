@@ -30,15 +30,6 @@ export async function reimagineAnotherMoment(input: ReimagineAnotherMomentInput)
   return reimagineAnotherMomentFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'reimagineAnotherMomentPrompt',
-  input: {schema: ReimagineAnotherMomentInputSchema},
-  output: {schema: ReimagineAnotherMomentOutputSchema},
-  prompt: `Using the provided reference image, generate a new photorealistic image that captures a candid moment immediately before or after the original photo was taken. It is essential to maintain the exact appearance, features, and clothing of the people, as well as the original background, lighting, and photographic style of the era.
-
-Reference Image: {{media url=restoredMasterImage}}`,
-});
-
 const reimagineAnotherMomentFlow = ai.defineFlow(
   {
     name: 'reimagineAnotherMomentFlow',
@@ -49,7 +40,7 @@ const reimagineAnotherMomentFlow = ai.defineFlow(
     const {media} = await ai.generate({
       prompt: [
         {media: {url: input.restoredMasterImage}},
-        {text: 'generate a new photorealistic image that captures a candid moment immediately before or after the original photo was taken. It is essential to maintain the exact appearance, features, and clothing of the people, as well as the original background, lighting, and photographic style of the era.'},
+        {text: 'You are a visual storyteller with the power to travel through time. Based on the provided reference photo, generate a new, photorealistic image that captures a candid, unseen moment either immediately before or after the original shot was taken. This new image must feel like a genuine continuation of the same story. It is absolutely essential to maintain the exact identities, appearances, features, and clothing of the people, as well as the original background, lighting, and photographic style of the era. The goal is to create a seamless "echo" of the original moment, not a different photo altogether.'},
       ],
       model: 'googleai/gemini-2.5-flash-image-preview',
       config: {

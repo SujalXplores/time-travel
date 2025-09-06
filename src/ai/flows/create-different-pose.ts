@@ -49,7 +49,7 @@ const createDifferentPoseFlow = ai.defineFlow(
             media: { url: input.restoredMasterImage },
         },
         {
-            text: 'Using the provided reference image, generate a new image where the subjects are in a slightly different, relaxed, and natural pose. Their identities, clothing, and the environment must be perfectly consistent with the reference image.',
+            text: 'You are a master portrait artist with a deep understanding of human anatomy and natural poses. Using the provided reference image, generate a new image where the subjects are in a slightly different, relaxed, and natural pose. Their identities, facial features, body types, clothing, and the environment must be perfectly consistent with the reference image. The new pose should feel candid and authentic, as if captured a moment later. Pay meticulous attention to details like hair, accessories, and the subtle interplay of light and shadow.',
         },
         ],
         config: {
