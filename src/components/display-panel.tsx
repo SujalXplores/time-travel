@@ -3,38 +3,50 @@
 import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LoaderCircle, Download, CameraOff } from 'lucide-react';
-import type { Echo } from '@/app/page';
+import type { Echo, FlowType } from '@/app/page';
 
 interface DisplayPanelProps {
   activeEcho: Echo | undefined;
   isLoading: boolean;
+  loadingFlow: string | null;
   onDownload: (src: string) => void;
 }
 
-export function DisplayPanel({ activeEcho, isLoading, onDownload }: DisplayPanelProps) {
+export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload }: DisplayPanelProps) {
 
-  const getLabelForType = (type: Echo['type']) => {
+  const getLabelForType = (type: Echo['type'] | FlowType) => {
     switch (type) {
         case 'original': return 'Original';
         case 'restored': return 'Restored Master';
-        case 'moment': return 'Echo: Another Moment';
-        case 'smile': return 'Echo: Subtle Smile';
-        case 'pose': return 'Echo: Different Pose';
-        case 'widen': return 'Echo: Expanded Scene';
-        default: return 'Echo';
+        case 'restoring': return 'Restoring your memory...';
+        case 'moment': return 'Creating another moment...';
+        case 'smile': return 'Adding a subtle smile...';
+        case 'pose': return 'Crafting a different pose...';
+        case 'widen': return 'Expanding the scene...';
+        default: return 'Generating Echo...';
     }
   }
+
+  const renderLoadingState = () => (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-muted-foreground animate-fade-in">
+        <div className="relative w-full max-w-lg aspect-[4/5]">
+            <Skeleton className="w-full h-full" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
+                <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
+                 <p className="font-headline text-lg tracking-wide mt-4 text-white/90">
+                    {getLabelForType(loadingFlow as FlowType)}
+                </p>
+            </div>
+        </div>
+    </div>
+  );
 
   return (
     <div className="flex-grow p-4 md:p-8 flex items-center justify-center bg-black/10">
       <div className="w-full h-full flex items-center justify-center">
-        {isLoading && !activeEcho ? (
-          <div className="flex flex-col items-center gap-4 text-muted-foreground animate-fade-in">
-            <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
-            <p className="font-headline text-lg tracking-wide">Restoring your memory...</p>
-          </div>
-        ) : activeEcho ? (
+        {isLoading ? renderLoadingState() : activeEcho ? (
           <Card className="max-w-full max-h-full aspect-[4/5] bg-transparent border-0 shadow-2xl group animate-fade-in relative overflow-hidden">
              <CardContent className="p-0 h-full w-full">
               <Image
@@ -58,13 +70,13 @@ export function DisplayPanel({ activeEcho, isLoading, onDownload }: DisplayPanel
               </Button>
              </CardContent>
           </Card>
-        ) : (
+        ) : !echoes.length ? (
           <div className="text-center text-muted-foreground p-8 animate-fade-in flex flex-col items-center gap-4">
             <CameraOff className="h-16 w-16 text-muted-foreground/50"/>
             <p className="font-headline text-xl">The Lightbox is Empty</p>
             <p className="max-w-xs text-sm">Upload a photo to begin your journey through time.</p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

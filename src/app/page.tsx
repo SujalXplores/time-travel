@@ -93,6 +93,8 @@ export default function Home() {
     if (!activeEcho || loadingFlow) return;
 
     setLoadingFlow(type);
+    const originalActiveId = activeEchoId;
+    setActiveEchoId(null); // Clear active echo to show loader
 
     try {
         let newImage: string | undefined;
@@ -125,6 +127,7 @@ export default function Home() {
                     title: "Coming Soon!",
                     description: "This feature is under development and will be available shortly.",
                 });
+                setActiveEchoId(originalActiveId); // Restore active id if feature is not available
                 return;
         }
 
@@ -143,6 +146,7 @@ export default function Home() {
             description: "Something went wrong while creating a new echo. Please try again.",
             variant: "destructive",
         });
+        setActiveEchoId(originalActiveId); // Restore active id on failure
     } finally {
         setLoadingFlow(null);
     }
@@ -193,7 +197,8 @@ export default function Home() {
                 <main className="flex-grow flex flex-col overflow-hidden relative">
                     <DisplayPanel
                         activeEcho={activeEcho}
-                        isLoading={loadingFlow === 'restoring'}
+                        isLoading={!!loadingFlow}
+                        loadingFlow={loadingFlow}
                         onDownload={handleDownload}
                     />
                     <Filmstrip
