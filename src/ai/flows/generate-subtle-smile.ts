@@ -34,21 +34,6 @@ export async function generateSubtleSmile(input: GenerateSubtleSmileInput): Prom
   return generateSubtleSmileFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateSubtleSmilePrompt',
-  input: {schema: GenerateSubtleSmileInputSchema},
-  output: {schema: GenerateSubtleSmileOutputSchema},
-  prompt: [
-    {media: {url: '{{{referenceImage}}}'}},
-    {
-      text: 'Using the provided reference image, regenerate the image but change the expression of the main subject to a subtle, natural, and happy smile. All other elements of the image, including other people and the background, must remain identical.',
-    },
-  ],
-  config: {
-    responseModalities: ['TEXT', 'IMAGE'],
-  },
-});
-
 const generateSubtleSmileFlow = ai.defineFlow(
   {
     name: 'generateSubtleSmileFlow',
@@ -56,7 +41,18 @@ const generateSubtleSmileFlow = ai.defineFlow(
     outputSchema: GenerateSubtleSmileOutputSchema,
   },
   async input => {
-    const {media} = await ai.generate(prompt(input));
+    const {media} = await ai.generate({
+        model: 'googleai/gemini-2.5-flash-image-preview',
+        prompt: [
+            {media: {url: input.referenceImage}},
+            {
+            text: 'Using the provided reference image, regenerate the image but change the expression of the main subject to a subtle, natural, and happy smile. All other elements of the image, including other people and the background, must remain identical.',
+            },
+        ],
+        config: {
+            responseModalities: ['TEXT', 'IMAGE'],
+        },
+    });
     return {newImage: media!.url!};
   }
 );

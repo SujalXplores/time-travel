@@ -35,24 +35,6 @@ export async function createDifferentPose(
   return createDifferentPoseFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'createDifferentPosePrompt',
-  input: { schema: CreateDifferentPoseInputSchema },
-  output: { schema: CreateDifferentPoseOutputSchema },
-  prompt: [
-    {
-      media: { url: '{{{restoredMasterImage}}}' },
-    },
-    {
-      text: 'Using the provided reference image, generate a new image where the subjects are in a slightly different, relaxed, and natural pose. Their identities, clothing, and the environment must be perfectly consistent with the reference image.',
-    },
-  ],
-  model: 'googleai/gemini-2.5-flash-image-preview',
-  config: {
-    responseModalities: ['TEXT', 'IMAGE'],
-  },
-});
-
 const createDifferentPoseFlow = ai.defineFlow(
   {
     name: 'createDifferentPoseFlow',
@@ -60,7 +42,20 @@ const createDifferentPoseFlow = ai.defineFlow(
     outputSchema: CreateDifferentPoseOutputSchema,
   },
   async input => {
-    const { media } = await ai.generate(prompt(input));
+    const { media } = await ai.generate({
+        model: 'googleai/gemini-2.5-flash-image-preview',
+        prompt: [
+        {
+            media: { url: input.restoredMasterImage },
+        },
+        {
+            text: 'Using the provided reference image, generate a new image where the subjects are in a slightly different, relaxed, and natural pose. Their identities, clothing, and the environment must be perfectly consistent with the reference image.',
+        },
+        ],
+        config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+        },
+    });
     return { generatedImage: media!.url! };
   }
 );

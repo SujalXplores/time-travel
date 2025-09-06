@@ -29,19 +29,6 @@ export async function restoreUploadedPhoto(input: RestoreUploadedPhotoInput): Pr
   return restoreUploadedPhotoFlow(input);
 }
 
-const restoreUploadedPhotoPrompt = ai.definePrompt({
-  name: 'restoreUploadedPhotoPrompt',
-  input: {schema: RestoreUploadedPhotoInputSchema},
-  output: {schema: RestoreUploadedPhotoOutputSchema},
-  prompt: `Take this user-uploaded photograph. Fully restore it to a high-resolution, photorealistic color image. Meticulously fix all physical damage including scratches, tears, dust, and fading. Correct any color cast and yellowing from age to reveal the original, natural colors.
-
-Photo: {{media url=photoDataUri}}`,
-  model: 'googleai/gemini-2.5-flash-image-preview',
-  config: {
-    responseModalities: ['TEXT', 'IMAGE'],
-  },
-});
-
 const restoreUploadedPhotoFlow = ai.defineFlow(
   {
     name: 'restoreUploadedPhotoFlow',
@@ -49,7 +36,18 @@ const restoreUploadedPhotoFlow = ai.defineFlow(
     outputSchema: RestoreUploadedPhotoOutputSchema,
   },
   async input => {
-    const {media} = await restoreUploadedPhotoPrompt(input);
+    const {media} = await ai.generate({
+      prompt: [
+        {media: {url: input.photoDataUri}},
+        {
+          text: 'Take this user-uploaded photograph. Fully restore it to a high-resolution, photorealistic color image. Meticulously fix all physical damage including scratches, tears, dust, and fading. Correct any color cast and yellowing from age to reveal the original, natural colors.',
+        },
+      ],
+      model: 'googleai/gemini-2.5-flash-image-preview',
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+      },
+    });
     return {restoredPhotoDataUri: media!.url!};
   }
 );
