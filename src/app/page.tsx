@@ -214,21 +214,19 @@ export default function Home() {
           </main>
         ) : (
           <div className="flex-grow flex overflow-hidden">
-            <SidebarMain>
-                <div className="flex-grow flex flex-col min-h-0">
-                    <DisplayPanel
-                        activeEcho={activeEcho}
-                        isLoading={!!loadingFlow}
-                        loadingFlow={loadingFlow}
-                        onDownload={handleDownload}
-                        echoesCount={echoes.length}
-                    />
-                    <Filmstrip
-                        echoes={echoes}
-                        activeEchoId={activeEchoId}
-                        onSelectEcho={setActiveEchoId}
-                    />
-                </div>
+            <SidebarMain className="flex flex-col flex-grow min-h-0">
+                <DisplayPanel
+                    activeEcho={activeEcho}
+                    isLoading={!!loadingFlow}
+                    loadingFlow={loadingFlow}
+                    onDownload={handleDownload}
+                    echoesCount={echoes.length}
+                />
+                <Filmstrip
+                    echoes={echoes}
+                    activeEchoId={activeEchoId}
+                    onSelectEcho={setActiveEchoId}
+                />
             </SidebarMain>
             <Sidebar>
               <Workbench

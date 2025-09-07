@@ -45,7 +45,7 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
   );
 
   const renderEmptyState = (title: string, description: string, icon: React.ReactNode) => (
-      <div className="text-center text-muted-foreground p-8 animate-fade-in flex flex-col items-center gap-4">
+      <div className="text-center text-muted-foreground p-8 animate-fade-in flex flex-col items-center justify-center gap-4 h-full">
         {icon}
         <p className="font-headline text-xl">{title}</p>
         <p className="max-w-xs text-sm">{description}</p>
@@ -53,7 +53,7 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
   );
 
   return (
-    <div className="flex-grow p-4 md:p-8 flex items-center justify-center bg-black/10">
+    <div className="flex-grow p-4 md:p-8 bg-black/10 min-h-0 flex flex-col items-center justify-center">
       <div className="w-full h-full flex items-center justify-center">
         {isLoading ? (
             renderLoadingState()
