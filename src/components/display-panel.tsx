@@ -61,9 +61,9 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
         {isLoading ? (
             renderLoadingState()
         ) : activeEcho ? (
-          <Card className="w-auto h-full bg-transparent border-0 shadow-none group animate-fade-in flex items-center justify-center">
+          <Card className="w-full h-full bg-transparent border-0 shadow-none group animate-fade-in flex items-center justify-center">
              <CardContent className="p-0 h-full w-full flex items-center justify-center">
-                <div className="relative h-full w-auto max-h-full max-w-full">
+                <div className="relative h-full w-full max-h-full max-w-full">
                   <Image
                     src={activeEcho.src}
                     alt={`Echo of type ${activeEcho.type}`}
