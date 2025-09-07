@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { PanelLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { UploadPanel } from '@/components/upload-panel';
@@ -216,18 +215,20 @@ export default function Home() {
         ) : (
           <div className="flex-grow flex overflow-hidden">
             <SidebarMain>
-                <DisplayPanel
-                  activeEcho={activeEcho}
-                  isLoading={!!loadingFlow}
-                  loadingFlow={loadingFlow}
-                  onDownload={handleDownload}
-                  echoesCount={echoes.length}
-                />
-                <Filmstrip
-                  echoes={echoes}
-                  activeEchoId={activeEchoId}
-                  onSelectEcho={setActiveEchoId}
-                />
+                <div className="flex-grow flex flex-col min-h-0">
+                    <DisplayPanel
+                        activeEcho={activeEcho}
+                        isLoading={!!loadingFlow}
+                        loadingFlow={loadingFlow}
+                        onDownload={handleDownload}
+                        echoesCount={echoes.length}
+                    />
+                    <Filmstrip
+                        echoes={echoes}
+                        activeEchoId={activeEchoId}
+                        onSelectEcho={setActiveEchoId}
+                    />
+                </div>
             </SidebarMain>
             <Sidebar>
               <Workbench
@@ -237,10 +238,6 @@ export default function Home() {
             </Sidebar>
           </div>
         )}
-
-        <footer className="text-center p-2 text-xs text-muted-foreground border-t shrink-0">
-          <p>Powered by Firebase and Google AI</p>
-        </footer>
       </div>
     </SidebarProvider>
   );
