@@ -41,6 +41,7 @@ const widenTheSceneFlow = ai.defineFlow(
   },
   async input => {
     const {media} = await ai.generate({
+      model: 'googleai/gemini-2.5-flash-image-preview',
       prompt: [
         {
           media: {url: input.restoredImage},
@@ -49,7 +50,6 @@ const widenTheSceneFlow = ai.defineFlow(
           text: `You are a master of photographic composition and digital expansion. Using the provided reference image as the central focal point, generate a new image that dramatically expands the scene with a wider-angle view. You must intelligently and creatively "outpaint" the original scene, revealing more of the surrounding environment. The new details must seamlessly and photorealistically match the style, lighting, shadows, textures, and historical era of the reference photo. The transition between the original image and the generated content should be undetectable. The final image should feel like the original, but captured with a much wider lens.`,
         },
       ],
-      model: 'googleai/gemini-2.5-flash-image-preview',
       config: {
         responseModalities: ['IMAGE', 'TEXT'],
       },
