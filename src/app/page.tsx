@@ -27,6 +27,70 @@ export interface Echo {
   type: 'original' | 'restored' | FlowType;
 }
 
+const createImageOnCanvas = (imageSrc: string, aspectRatio: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const originalWidth = img.width;
+      const originalHeight = img.height;
+
+      const [arWidth, arHeight] = aspectRatio.split(':').map(Number);
+      const targetAspectRatio = arWidth / arHeight;
+
+      let canvasWidth: number, canvasHeight: number;
+
+      // Determine new canvas dimensions to contain the original image
+      if ((originalWidth / originalHeight) > targetAspectRatio) {
+          canvasWidth = originalWidth;
+          canvasHeight = originalWidth / targetAspectRatio;
+      } else {
+          canvasHeight = originalHeight;
+          canvasWidth = originalHeight * targetAspectRatio;
+      }
+      
+      // Limit canvas size for performance
+      const MAX_DIMENSION = 1024;
+      if (canvasWidth > MAX_DIMENSION || canvasHeight > MAX_DIMENSION) {
+        if (canvasWidth > canvasHeight) {
+          canvasHeight = (MAX_DIMENSION / canvasWidth) * canvasHeight;
+          canvasWidth = MAX_DIMENSION;
+        } else {
+          canvasWidth = (MAX_DIMENSION / canvasHeight) * canvasWidth;
+          canvasHeight = MAX_DIMENSION;
+        }
+      }
+
+
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        return reject(new Error('Could not get canvas context'));
+      }
+
+      // Fill background with transparency
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      // Calculate position to center the image
+      const x = (canvasWidth - originalWidth) / 2;
+      const y = (canvasHeight - originalHeight) / 2;
+
+      ctx.drawImage(img, x, y, originalWidth, originalHeight);
+
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = (err) => {
+      console.error("Failed to load image for canvas creation", err);
+      reject(new Error('Failed to load image for canvas creation.'));
+    };
+    img.src = imageSrc;
+  });
+};
+
+
 function Header({ onImageUpload, hasEchoes }: { onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void, hasEchoes: boolean}) {
     return (
         <header className="py-4 px-6 flex items-center justify-between border-b shrink-0 gap-4">
@@ -122,6 +186,42 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
+  const runFlow = async (type: FlowType, referenceImage: string, options?: { aspectRatio?: string }) => {
+    switch (type) {
+        case 'moment': {
+            const result = await reimagineAnotherMoment({ restoredMasterImage: referenceImage });
+            return result.reimaginedImage;
+        }
+        case 'smile': {
+            const result = await generateSubtleSmile({ referenceImage });
+            return result.newImage;
+        }
+        case 'pose': {
+            const result = await createDifferentPose({ restoredMasterImage: referenceImage });
+            return result.generatedImage;
+        }
+        case 'widen': {
+            const result = await widenTheScene({ restoredImage: referenceImage });
+            return result.widenedSceneImage;
+        }
+        case 'outpaint': {
+            if (!options?.aspectRatio) throw new Error("Aspect ratio not provided for outpainting.");
+            const imageOnCanvas = await createImageOnCanvas(referenceImage, options.aspectRatio);
+            const result = await outpaintImage({ referenceImage: imageOnCanvas });
+            return result.outpaintedImage;
+        }
+        case 'scenery':
+        case 'animate':
+            toast({
+                title: "Coming Soon!",
+                description: "This feature is under development and will be available shortly.",
+            });
+            return null;
+        default:
+            throw new Error(`Unknown flow type: ${type}`);
+    }
+  }
+
   const handleReimagine: WorkbenchProps['onReimagine'] = async (type, options) => {
     const activeEcho = echoes.find(e => e.id === activeEchoId);
     if (!activeEcho || loadingFlow) return;
@@ -131,58 +231,18 @@ export default function Home() {
     setActiveEchoId(null);
 
     try {
-        let newImage: string | undefined;
         const referenceImage = echoes.find(e => e.type === 'restored')?.src ?? activeEcho.src;
-
-        switch (type) {
-            case 'moment': {
-                const result = await reimagineAnotherMoment({ restoredMasterImage: referenceImage });
-                newImage = result.reimaginedImage;
-                break;
-            }
-            case 'smile': {
-                const result = await generateSubtleSmile({ referenceImage });
-                newImage = result.newImage;
-                break;
-            }
-            case 'pose': {
-                const result = await createDifferentPose({ restoredMasterImage: referenceImage });
-                newImage = result.generatedImage;
-                break;
-            }
-            case 'widen': {
-                const result = await widenTheScene({ restoredImage: referenceImage });
-                newImage = result.widenedSceneImage;
-                break;
-            }
-            case 'outpaint': {
-              if (options?.aspectRatio) {
-                const result = await outpaintImage({ referenceImage, aspectRatio: options.aspectRatio });
-                newImage = result.outpaintedImage;
-              } else {
-                throw new Error("Aspect ratio not provided for outpainting.");
-              }
-              break;
-            }
-            case 'scenery':
-            case 'animate':
-                toast({
-                    title: "Coming Soon!",
-                    description: "This feature is under development and will be available shortly.",
-                });
-                setActiveEchoId(originalActiveId);
-                setLoadingFlow(null);
-                return;
-        }
+        const newImage = await runFlow(type, referenceImage, options);
 
         if (newImage) {
             const newEcho = { id: `echo-${Date.now()}-${type}`, src: newImage, type };
             setEchoes(prev => [...prev, newEcho]);
             setActiveEchoId(newEcho.id);
         } else {
-            throw new Error(`Re-imagination of type '${type}' failed to produce an image.`);
+            if (type !== 'scenery' && type !== 'animate') {
+              throw new Error(`Re-imagination of type '${type}' failed to produce an image.`);
+            }
         }
-
     } catch (error) {
         console.error(`Re-imagination failed for ${type}:`, error);
         toast({
@@ -190,9 +250,11 @@ export default function Home() {
             description: "Something went wrong while creating a new echo. Please try again.",
             variant: "destructive",
         });
-        setActiveEchoId(originalActiveId);
     } finally {
         setLoadingFlow(null);
+        if (!activeEchoId) {
+          setActiveEchoId(originalActiveId); // Restore active echo if new one wasn't set
+        }
     }
   };
 
