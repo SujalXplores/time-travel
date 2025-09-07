@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea, Scrollbar } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from '@/lib/utils';
 import type { Echo } from '@/app/page';
@@ -50,7 +50,7 @@ export function Filmstrip({ echoes, activeEchoId, onSelectEcho }: FilmstripProps
                         </Card>
                     ))}
                 </div>
-                <ScrollBar orientation="horizontal" />
+                <Scrollbar orientation="horizontal" />
             </ScrollArea>
         </div>
     );

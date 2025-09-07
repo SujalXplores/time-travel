@@ -249,8 +249,4 @@ export {
   MenubarRadioItem,
   MenubarPortal,
   MenubarSubContent,
-  MenubarSubTrigger,
-  MenubarGroup,
-  MenubarSub,
-  MenubarShortcut,
-}
+  Men

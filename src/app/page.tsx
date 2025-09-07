@@ -249,7 +249,7 @@ export default function Home() {
     } finally {
         setLoadingFlow(null);
         if (activeEchoId === null) {
-          setActiveEchoId(originalActiveId); // Restore active echo if new one wasn't set
+          setActiveEchoId(originalActiveId);
         }
     }
   };
