@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { DisplayPanel } from '@/components/display-panel';
 import { Workbench } from '@/components/workbench';
 import { Filmstrip } from '@/components/filmstrip';
-import { Sidebar, SidebarProvider, SidebarTrigger, SidebarInset, useSidebar } from '@/components/sidebar';
+import { Sidebar, SidebarProvider, SidebarTrigger, SidebarMain } from '@/components/sidebar';
 
 
 import { restoreUploadedPhoto } from '@/ai/flows/restore-uploaded-photo';
@@ -27,30 +27,25 @@ export interface Echo {
   type: 'original' | 'restored' | FlowType;
 }
 
-function Header() {
-    const { isMobile } = useSidebar();
-    const [echoes] = useState<Echo[]>([]);
-
-    const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
-        // Dummy handler, real one is in the parent.
-    };
-
+function Header({ onImageUpload, hasEchoes }: { onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void, hasEchoes: boolean}) {
     return (
         <header className="py-4 px-6 flex items-center justify-between border-b shrink-0 gap-4">
-            {isMobile && <SidebarTrigger />}
-            <div className="flex-grow">
-                <h1 className="text-xl font-bold font-headline tracking-wide">
-                Echoes of Time
-                </h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">
-                    Breathe new life into your cherished memories.
-                </p>
+            <div className="flex items-center gap-4">
+                {hasEchoes && <SidebarTrigger className="lg:hidden" />}
+                <div className="flex-grow">
+                    <h1 className="text-xl font-bold font-headline tracking-wide">
+                    Echoes of Time
+                    </h1>
+                    <p className="text-xs text-muted-foreground hidden sm:block">
+                        Breathe new life into your cherished memories.
+                    </p>
+                </div>
             </div>
-             {echoes.length > 0 && (
+             {hasEchoes && (
                 <Button asChild variant="outline" size="sm">
                     <label htmlFor="photo-upload-secondary" className="cursor-pointer">
                         Upload Another
-                        <input id="photo-upload-secondary" type="file" className="hidden" onChange={handleImageUpload} accept="image/png, image/jpeg" />
+                        <input id="photo-upload-secondary" type="file" className="hidden" onChange={onImageUpload} accept="image/png, image/jpeg" />
                     </label>
                 </Button>
              )}
@@ -89,9 +84,8 @@ export default function Home() {
         
         const originalEcho = { id: `echo-${Date.now()}-original`, src: dataUri, type: 'original' as const };
         
-        // Set loading state immediately with original echo for context
         setEchoes([originalEcho]);
-        setActiveEchoId(originalEcho.id); // Show original while restoring
+        setActiveEchoId(originalEcho.id);
         setLoadingFlow('restoring');
         
         const result = await restoreUploadedPhoto({ photoDataUri: dataUri });
@@ -134,11 +128,10 @@ export default function Home() {
 
     setLoadingFlow(type);
     const originalActiveId = activeEchoId;
-    setActiveEchoId(null); // Clear active echo to show loader in display panel
+    setActiveEchoId(null);
 
     try {
         let newImage: string | undefined;
-        // Always use the restored master as the reference for consistency
         const referenceImage = echoes.find(e => e.type === 'restored')?.src ?? activeEcho.src;
 
         switch (type) {
@@ -168,7 +161,7 @@ export default function Home() {
                     title: "Coming Soon!",
                     description: "This feature is under development and will be available shortly.",
                 });
-                setActiveEchoId(originalActiveId); // Restore active id if feature is not available
+                setActiveEchoId(originalActiveId);
                 setLoadingFlow(null);
                 return;
         }
@@ -188,7 +181,7 @@ export default function Home() {
             description: "Something went wrong while creating a new echo. Please try again.",
             variant: "destructive",
         });
-        setActiveEchoId(originalActiveId); // Restore active id on failure
+        setActiveEchoId(originalActiveId);
     } finally {
         setLoadingFlow(null);
     }
@@ -210,45 +203,47 @@ export default function Home() {
 
   return (
     <SidebarProvider>
-        <div className="flex flex-col h-screen bg-transparent text-foreground font-body">
-            <Header />
-            
-            {echoes.length === 0 ? (
-                <main className="flex-grow flex items-center justify-center p-4">
-                    <UploadPanel
-                        onImageUpload={handleImageUpload}
-                        isLoading={loadingFlow === 'restoring'}
-                    />
-                </main>
-            ) : (
-                <div className="flex flex-grow overflow-hidden">
-                    <SidebarInset className="flex flex-col overflow-hidden">
-                         <DisplayPanel
-                            activeEcho={activeEcho}
-                            isLoading={!!loadingFlow}
-                            loadingFlow={loadingFlow}
-                            onDownload={handleDownload}
-                            echoesCount={echoes.length}
-                        />
-                        <Filmstrip
-                            echoes={echoes}
-                            activeEchoId={activeEchoId}
-                            onSelectEcho={setActiveEchoId}
-                        />
-                    </SidebarInset>
-                    <Sidebar collapsible="offcanvas">
-                         <Workbench
-                            onReimagine={handleReimagine}
-                            loadingFlow={loadingFlow}
-                        />
-                    </Sidebar>
-                </div>
-            )}
+      <div className="flex flex-col h-screen bg-transparent text-foreground font-body">
+        <Header onImageUpload={handleImageUpload} hasEchoes={echoes.length > 0} />
+        
+        {echoes.length === 0 ? (
+          <main className="flex-grow flex items-center justify-center p-4">
+            <UploadPanel
+              onImageUpload={handleImageUpload}
+              isLoading={loadingFlow === 'restoring'}
+            />
+          </main>
+        ) : (
+          <div className="flex-grow flex overflow-hidden">
+            <SidebarMain>
+              <div className="flex-grow flex flex-col overflow-hidden">
+                <DisplayPanel
+                  activeEcho={activeEcho}
+                  isLoading={!!loadingFlow}
+                  loadingFlow={loadingFlow}
+                  onDownload={handleDownload}
+                  echoesCount={echoes.length}
+                />
+                <Filmstrip
+                  echoes={echoes}
+                  activeEchoId={activeEchoId}
+                  onSelectEcho={setActiveEchoId}
+                />
+              </div>
+            </SidebarMain>
+            <Sidebar>
+              <Workbench
+                onReimagine={handleReimagine}
+                loadingFlow={loadingFlow}
+              />
+            </Sidebar>
+          </div>
+        )}
 
         <footer className="text-center p-2 text-xs text-muted-foreground border-t shrink-0">
-            <p>Powered by Firebase and Google AI</p>
+          <p>Powered by Firebase and Google AI</p>
         </footer>
-        </div>
+      </div>
     </SidebarProvider>
   );
 }

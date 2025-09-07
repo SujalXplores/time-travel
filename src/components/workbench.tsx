@@ -26,7 +26,7 @@ const futureActionButtons = [
 
 export function Workbench({ onReimagine, loadingFlow }: WorkbenchProps) {
   return (
-    <aside className="w-80 border-l bg-background/60 backdrop-blur-xl p-4 flex-col shrink-0 hidden lg:flex">
+    <div className="p-4 flex flex-col h-full">
         <div className="p-2">
             <h2 className="text-lg font-headline font-semibold tracking-wide">The Workbench</h2>
             <p className="text-sm text-muted-foreground">Select a tool to re-imagine your active photo.</p>
@@ -85,6 +85,6 @@ export function Workbench({ onReimagine, loadingFlow }: WorkbenchProps) {
             ))}
             </div>
         </TooltipProvider>
-    </aside>
+    </div>
   );
 }
