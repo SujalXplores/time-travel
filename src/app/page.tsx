@@ -2,11 +2,16 @@
 
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { PanelLeft } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import { UploadPanel } from '@/components/upload-panel';
 import { useToast } from "@/hooks/use-toast"
 import { DisplayPanel } from '@/components/display-panel';
 import { Workbench } from '@/components/workbench';
 import { Filmstrip } from '@/components/filmstrip';
+import { Sidebar, SidebarProvider, SidebarTrigger, SidebarInset, useSidebar } from '@/components/sidebar';
+
 
 import { restoreUploadedPhoto } from '@/ai/flows/restore-uploaded-photo';
 import { reimagineAnotherMoment } from '@/ai/flows/reimagine-another-moment';
@@ -21,6 +26,38 @@ export interface Echo {
   src: string;
   type: 'original' | 'restored' | FlowType;
 }
+
+function Header() {
+    const { isMobile } = useSidebar();
+    const [echoes] = useState<Echo[]>([]);
+
+    const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+        // Dummy handler, real one is in the parent.
+    };
+
+    return (
+        <header className="py-4 px-6 flex items-center justify-between border-b shrink-0 gap-4">
+            {isMobile && <SidebarTrigger />}
+            <div className="flex-grow">
+                <h1 className="text-xl font-bold font-headline tracking-wide">
+                Echoes of Time
+                </h1>
+                <p className="text-xs text-muted-foreground hidden sm:block">
+                    Breathe new life into your cherished memories.
+                </p>
+            </div>
+             {echoes.length > 0 && (
+                <Button asChild variant="outline" size="sm">
+                    <label htmlFor="photo-upload-secondary" className="cursor-pointer">
+                        Upload Another
+                        <input id="photo-upload-secondary" type="file" className="hidden" onChange={handleImageUpload} accept="image/png, image/jpeg" />
+                    </label>
+                </Button>
+             )}
+        </header>
+    );
+}
+
 
 export default function Home() {
   const [echoes, setEchoes] = useState<Echo[]>([]);
@@ -51,8 +88,11 @@ export default function Home() {
         const dataUri = reader.result as string;
         
         const originalEcho = { id: `echo-${Date.now()}-original`, src: dataUri, type: 'original' as const };
+        
+        // Set loading state immediately with original echo for context
         setEchoes([originalEcho]);
-        setActiveEchoId(originalEcho.id);
+        setActiveEchoId(originalEcho.id); // Show original while restoring
+        setLoadingFlow('restoring');
         
         const result = await restoreUploadedPhoto({ photoDataUri: dataUri });
         
@@ -94,11 +134,12 @@ export default function Home() {
 
     setLoadingFlow(type);
     const originalActiveId = activeEchoId;
-    setActiveEchoId(null); // Clear active echo to show loader
+    setActiveEchoId(null); // Clear active echo to show loader in display panel
 
     try {
         let newImage: string | undefined;
-        const referenceImage = activeEcho.src;
+        // Always use the restored master as the reference for consistency
+        const referenceImage = echoes.find(e => e.type === 'restored')?.src ?? activeEcho.src;
 
         switch (type) {
             case 'moment': {
@@ -128,6 +169,7 @@ export default function Home() {
                     description: "This feature is under development and will be available shortly.",
                 });
                 setActiveEchoId(originalActiveId); // Restore active id if feature is not available
+                setLoadingFlow(null);
                 return;
         }
 
@@ -167,56 +209,46 @@ export default function Home() {
   const activeEcho = echoes.find(e => e.id === activeEchoId);
 
   return (
-    <div className="flex flex-col h-screen bg-transparent text-foreground font-body">
-        <header className="py-4 px-6 flex items-center justify-between border-b shrink-0">
-            <div className="text-center">
-                <h1 className="text-xl font-bold font-headline tracking-wide">
-                Echoes of Time
-                </h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">
-                    Breathe new life into your cherished memories.
-                </p>
-            </div>
-             {echoes.length > 0 && (
-                <label htmlFor="photo-upload-secondary" className="cursor-pointer">
-                    <span className="text-sm font-medium hover:text-primary transition-colors">Upload Another</span>
-                    <input id="photo-upload-secondary" type="file" className="hidden" onChange={handleImageUpload} accept="image/png, image/jpeg" />
-                </label>
-             )}
-        </header>
-        
-        {echoes.length === 0 ? (
-            <main className="flex-grow flex items-center justify-center p-4">
-                 <UploadPanel
-                    onImageUpload={handleImageUpload}
-                    isLoading={loadingFlow === 'restoring'}
-                />
-            </main>
-        ) : (
-            <div className="flex flex-grow overflow-hidden">
-                <main className="flex-grow flex flex-col overflow-hidden relative">
-                    <DisplayPanel
-                        activeEcho={activeEcho}
-                        isLoading={!!loadingFlow}
-                        loadingFlow={loadingFlow}
-                        onDownload={handleDownload}
-                    />
-                    <Filmstrip
-                        echoes={echoes}
-                        activeEchoId={activeEchoId}
-                        onSelectEcho={setActiveEchoId}
+    <SidebarProvider>
+        <div className="flex flex-col h-screen bg-transparent text-foreground font-body">
+            <Header />
+            
+            {echoes.length === 0 ? (
+                <main className="flex-grow flex items-center justify-center p-4">
+                    <UploadPanel
+                        onImageUpload={handleImageUpload}
+                        isLoading={loadingFlow === 'restoring'}
                     />
                 </main>
-                <Workbench
-                    onReimagine={handleReimagine}
-                    loadingFlow={loadingFlow}
-                />
-            </div>
-        )}
+            ) : (
+                <div className="flex flex-grow overflow-hidden">
+                    <SidebarInset className="flex flex-col overflow-hidden">
+                         <DisplayPanel
+                            activeEcho={activeEcho}
+                            isLoading={!!loadingFlow}
+                            loadingFlow={loadingFlow}
+                            onDownload={handleDownload}
+                            echoesCount={echoes.length}
+                        />
+                        <Filmstrip
+                            echoes={echoes}
+                            activeEchoId={activeEchoId}
+                            onSelectEcho={setActiveEchoId}
+                        />
+                    </SidebarInset>
+                    <Sidebar collapsible="offcanvas">
+                         <Workbench
+                            onReimagine={handleReimagine}
+                            loadingFlow={loadingFlow}
+                        />
+                    </Sidebar>
+                </div>
+            )}
 
-      <footer className="text-center p-2 text-xs text-muted-foreground border-t shrink-0">
-        <p>Powered by Firebase and Google AI</p>
-      </footer>
-    </div>
+        <footer className="text-center p-2 text-xs text-muted-foreground border-t shrink-0">
+            <p>Powered by Firebase and Google AI</p>
+        </footer>
+        </div>
+    </SidebarProvider>
   );
 }
