@@ -32,36 +32,38 @@ const createImageOnCanvas = (imageSrc: string, aspectRatio: string): Promise<str
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      const originalWidth = img.width;
-      const originalHeight = img.height;
+      let originalWidth = img.width;
+      let originalHeight = img.height;
 
-      const [arWidth, arHeight] = aspectRatio.split(':').map(Number);
-      const targetAspectRatio = arWidth / arHeight;
-
-      let canvasWidth: number, canvasHeight: number;
-
-      // Determine new canvas dimensions to contain the original image
-      if ((originalWidth / originalHeight) > targetAspectRatio) {
-          canvasWidth = originalWidth;
-          canvasHeight = originalWidth / targetAspectRatio;
-      } else {
-          canvasHeight = originalHeight;
-          canvasWidth = originalHeight * targetAspectRatio;
-      }
-      
-      // Limit canvas size for performance
-      const MAX_DIMENSION = 1024;
-      if (canvasWidth > MAX_DIMENSION || canvasHeight > MAX_DIMENSION) {
-        if (canvasWidth > canvasHeight) {
-          canvasHeight = (MAX_DIMENSION / canvasWidth) * canvasHeight;
-          canvasWidth = MAX_DIMENSION;
+      // Limit original image size for performance before placing on canvas
+      const MAX_ORIGINAL_DIMENSION = 800;
+      if (originalWidth > MAX_ORIGINAL_DIMENSION || originalHeight > MAX_ORIGINAL_DIMENSION) {
+        if (originalWidth > originalHeight) {
+          originalHeight = (MAX_ORIGINAL_DIMENSION / originalWidth) * originalHeight;
+          originalWidth = MAX_ORIGINAL_DIMENSION;
         } else {
-          canvasWidth = (MAX_DIMENSION / canvasHeight) * canvasWidth;
-          canvasHeight = MAX_DIMENSION;
+          originalWidth = (MAX_ORIGINAL_DIMENSION / originalHeight) * originalWidth;
+          originalHeight = MAX_ORIGINAL_DIMENSION;
         }
       }
 
+      const [arWidth, arHeight] = aspectRatio.split(':').map(Number);
+      const targetAspectRatio = arWidth / arHeight;
+      const originalAspectRatio = originalWidth / originalHeight;
 
+      let canvasWidth: number, canvasHeight: number;
+
+      // Determine canvas dimensions to fully contain the original image
+      if (originalAspectRatio > targetAspectRatio) {
+        // Original is wider than target, so width determines size
+        canvasWidth = originalWidth;
+        canvasHeight = originalWidth / targetAspectRatio;
+      } else {
+        // Original is taller or same as target, so height determines size
+        canvasHeight = originalHeight;
+        canvasWidth = originalHeight * targetAspectRatio;
+      }
+      
       const canvas = document.createElement('canvas');
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
@@ -252,7 +254,7 @@ export default function Home() {
         });
     } finally {
         setLoadingFlow(null);
-        if (!activeEchoId) {
+        if (activeEchoId === null) {
           setActiveEchoId(originalActiveId); // Restore active echo if new one wasn't set
         }
     }
@@ -286,8 +288,8 @@ export default function Home() {
           </main>
         ) : (
           <div className="flex-grow flex min-h-0 overflow-hidden">
-            <SidebarMain>
-                <div className="flex-grow flex flex-col min-h-0">
+            <SidebarMain className="flex flex-col flex-grow min-h-0">
+                <div className="flex-grow min-h-0">
                     <DisplayPanel
                         activeEcho={activeEcho}
                         isLoading={!!loadingFlow}
@@ -295,12 +297,12 @@ export default function Home() {
                         onDownload={handleDownload}
                         echoesCount={echoes.length}
                     />
-                    <Filmstrip
-                        echoes={echoes}
-                        activeEchoId={activeEchoId}
-                        onSelectEcho={setActiveEchoId}
-                    />
                 </div>
+                <Filmstrip
+                    echoes={echoes}
+                    activeEchoId={activeEchoId}
+                    onSelectEcho={setActiveEchoId}
+                />
             </SidebarMain>
             <Sidebar>
               <Workbench
