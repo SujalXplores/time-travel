@@ -216,7 +216,6 @@ export default function Home() {
         ) : (
           <div className="flex-grow flex overflow-hidden">
             <SidebarMain>
-              <div className="flex-grow flex flex-col overflow-hidden">
                 <DisplayPanel
                   activeEcho={activeEcho}
                   isLoading={!!loadingFlow}
@@ -229,7 +228,6 @@ export default function Home() {
                   activeEchoId={activeEchoId}
                   onSelectEcho={setActiveEchoId}
                 />
-              </div>
             </SidebarMain>
             <Sidebar>
               <Workbench
