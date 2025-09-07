@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoaderCircle, Download, CameraOff, WandSparkles } from 'lucide-react';
 import type { Echo, FlowType } from '@/app/page';
+import { cn } from '@/lib/utils';
 
 interface DisplayPanelProps {
   activeEcho: Echo | undefined;
@@ -13,9 +14,10 @@ interface DisplayPanelProps {
   loadingFlow: string | null;
   onDownload: (src: string) => void;
   echoesCount: number;
+  className?: string;
 }
 
-export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, echoesCount }: DisplayPanelProps) {
+export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, echoesCount, className }: DisplayPanelProps) {
 
   const getLabelForType = (type: Echo['type'] | FlowType | null) => {
     switch (type) {
@@ -33,7 +35,7 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
 
   const renderLoadingState = () => (
     <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-muted-foreground animate-fade-in">
-        <div className="relative w-full max-w-lg aspect-[4/5]">
+        <div className="relative w-full max-w-lg aspect-[4/5] p-2">
             <Skeleton className="w-full h-full rounded-lg" />
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 rounded-lg">
                 <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
@@ -54,14 +56,14 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
   );
 
   return (
-    <div className="flex-grow p-4 md:p-8 bg-black/10 flex items-center justify-center min-h-0">
-      <div className="w-full h-full flex items-center justify-center">
+    <div className={cn("bg-black/10 flex items-center justify-center", className)}>
+      <div className="w-full h-full flex items-center justify-center p-4 md:p-8">
         {isLoading ? (
             renderLoadingState()
         ) : activeEcho ? (
           <Card className="w-auto h-full bg-transparent border-0 shadow-none group animate-fade-in flex items-center justify-center">
              <CardContent className="p-0 h-full w-full flex items-center justify-center">
-                <div className="relative h-full w-auto aspect-[4/5]">
+                <div className="relative h-full w-auto max-h-full max-w-full">
                   <Image
                     src={activeEcho.src}
                     alt={`Echo of type ${activeEcho.type}`}

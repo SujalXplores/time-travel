@@ -35,15 +35,14 @@ const createImageOnCanvas = (imageSrc: string, aspectRatio: string): Promise<str
       let originalWidth = img.width;
       let originalHeight = img.height;
 
-      // Limit original image size for performance before placing on canvas
-      const MAX_ORIGINAL_DIMENSION = 800;
-      if (originalWidth > MAX_ORIGINAL_DIMENSION || originalHeight > MAX_ORIGINAL_DIMENSION) {
+      const MAX_DIMENSION = 1024;
+      if (originalWidth > MAX_DIMENSION || originalHeight > MAX_DIMENSION) {
         if (originalWidth > originalHeight) {
-          originalHeight = (MAX_ORIGINAL_DIMENSION / originalWidth) * originalHeight;
-          originalWidth = MAX_ORIGINAL_DIMENSION;
+          originalHeight = Math.round((MAX_DIMENSION / originalWidth) * originalHeight);
+          originalWidth = MAX_DIMENSION;
         } else {
-          originalWidth = (MAX_ORIGINAL_DIMENSION / originalHeight) * originalWidth;
-          originalHeight = MAX_ORIGINAL_DIMENSION;
+          originalWidth = Math.round((MAX_DIMENSION / originalHeight) * originalWidth);
+          originalHeight = MAX_DIMENSION;
         }
       }
 
@@ -53,13 +52,10 @@ const createImageOnCanvas = (imageSrc: string, aspectRatio: string): Promise<str
 
       let canvasWidth: number, canvasHeight: number;
 
-      // Determine canvas dimensions to fully contain the original image
       if (originalAspectRatio > targetAspectRatio) {
-        // Original is wider than target, so width determines size
         canvasWidth = originalWidth;
         canvasHeight = originalWidth / targetAspectRatio;
       } else {
-        // Original is taller or same as target, so height determines size
         canvasHeight = originalHeight;
         canvasWidth = originalHeight * targetAspectRatio;
       }
@@ -73,10 +69,8 @@ const createImageOnCanvas = (imageSrc: string, aspectRatio: string): Promise<str
         return reject(new Error('Could not get canvas context'));
       }
 
-      // Fill background with transparency
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      // Calculate position to center the image
       const x = (canvasWidth - originalWidth) / 2;
       const y = (canvasHeight - originalHeight) / 2;
 
@@ -289,15 +283,14 @@ export default function Home() {
         ) : (
           <div className="flex-grow flex min-h-0 overflow-hidden">
             <SidebarMain className="flex flex-col flex-grow min-h-0">
-                <div className="flex-grow min-h-0">
-                    <DisplayPanel
-                        activeEcho={activeEcho}
-                        isLoading={!!loadingFlow}
-                        loadingFlow={loadingFlow}
-                        onDownload={handleDownload}
-                        echoesCount={echoes.length}
-                    />
-                </div>
+                <DisplayPanel
+                    className="flex-grow min-h-0"
+                    activeEcho={activeEcho}
+                    isLoading={!!loadingFlow}
+                    loadingFlow={loadingFlow}
+                    onDownload={handleDownload}
+                    echoesCount={echoes.length}
+                />
                 <Filmstrip
                     echoes={echoes}
                     activeEchoId={activeEchoId}
