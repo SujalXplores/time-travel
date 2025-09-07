@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { UploadPanel } from '@/components/upload-panel';
 import { useToast } from "@/hooks/use-toast"
 import { DisplayPanel } from '@/components/display-panel';
-import { Workbench } from '@/components/workbench';
+import { Workbench, WorkbenchProps } from '@/components/workbench';
 import { Filmstrip } from '@/components/filmstrip';
 import { Sidebar, SidebarProvider, SidebarTrigger, SidebarMain } from '@/components/sidebar';
 
@@ -17,8 +17,9 @@ import { reimagineAnotherMoment } from '@/ai/flows/reimagine-another-moment';
 import { generateSubtleSmile } from '@/ai/flows/generate-subtle-smile';
 import { createDifferentPose } from '@/ai/flows/create-different-pose';
 import { widenTheScene } from '@/ai/flows/widen-the-scene';
+import { outpaintImage } from '@/ai/flows/outpaint-image';
 
-export type FlowType = 'moment' | 'smile' | 'pose' | 'widen' | 'scenery' | 'animate';
+export type FlowType = 'moment' | 'smile' | 'pose' | 'widen' | 'outpaint' | 'scenery' | 'animate';
 
 export interface Echo {
   id: string;
@@ -121,7 +122,7 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
-  const handleReimagine = async (type: FlowType) => {
+  const handleReimagine: WorkbenchProps['onReimagine'] = async (type, options) => {
     const activeEcho = echoes.find(e => e.id === activeEchoId);
     if (!activeEcho || loadingFlow) return;
 
@@ -153,6 +154,15 @@ export default function Home() {
                 const result = await widenTheScene({ restoredImage: referenceImage });
                 newImage = result.widenedSceneImage;
                 break;
+            }
+            case 'outpaint': {
+              if (options?.aspectRatio) {
+                const result = await outpaintImage({ referenceImage, aspectRatio: options.aspectRatio });
+                newImage = result.outpaintedImage;
+              } else {
+                throw new Error("Aspect ratio not provided for outpainting.");
+              }
+              break;
             }
             case 'scenery':
             case 'animate':
@@ -213,20 +223,22 @@ export default function Home() {
             />
           </main>
         ) : (
-          <div className="flex-grow flex overflow-hidden">
-            <SidebarMain className="flex flex-col flex-grow min-h-0">
-                <DisplayPanel
-                    activeEcho={activeEcho}
-                    isLoading={!!loadingFlow}
-                    loadingFlow={loadingFlow}
-                    onDownload={handleDownload}
-                    echoesCount={echoes.length}
-                />
-                <Filmstrip
-                    echoes={echoes}
-                    activeEchoId={activeEchoId}
-                    onSelectEcho={setActiveEchoId}
-                />
+          <div className="flex-grow flex min-h-0 overflow-hidden">
+            <SidebarMain>
+                <div className="flex-grow flex flex-col min-h-0">
+                    <DisplayPanel
+                        activeEcho={activeEcho}
+                        isLoading={!!loadingFlow}
+                        loadingFlow={loadingFlow}
+                        onDownload={handleDownload}
+                        echoesCount={echoes.length}
+                    />
+                    <Filmstrip
+                        echoes={echoes}
+                        activeEchoId={activeEchoId}
+                        onSelectEcho={setActiveEchoId}
+                    />
+                </div>
             </SidebarMain>
             <Sidebar>
               <Workbench

@@ -25,7 +25,8 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
         case 'moment': return 'Creating another moment...';
         case 'smile': return 'Adding a subtle smile...';
         case 'pose': return 'Crafting a different pose...';
-        case 'widen': return 'Expanding the scene...';
+        case 'widen': return 'Zooming out the scene...';
+        case 'outpaint': return 'Outpainting the canvas...';
         default: return 'Generating Echo...';
     }
   }
@@ -53,14 +54,14 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
   );
 
   return (
-    <div className="flex-grow p-4 md:p-8 bg-black/10 min-h-0 flex items-center justify-center">
+    <div className="flex-grow p-4 md:p-8 bg-black/10 flex items-center justify-center min-h-0">
       <div className="w-full h-full flex items-center justify-center">
         {isLoading ? (
             renderLoadingState()
         ) : activeEcho ? (
           <Card className="w-auto h-full bg-transparent border-0 shadow-none group animate-fade-in flex items-center justify-center">
              <CardContent className="p-0 h-full w-full flex items-center justify-center">
-                <div className="relative w-auto h-full aspect-[4/5]">
+                <div className="relative h-full w-auto aspect-[4/5]">
                   <Image
                     src={activeEcho.src}
                     alt={`Echo of type ${activeEcho.type}`}
