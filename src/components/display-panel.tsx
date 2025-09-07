@@ -53,33 +53,35 @@ export function DisplayPanel({ activeEcho, isLoading, loadingFlow, onDownload, e
   );
 
   return (
-    <div className="flex-grow p-4 md:p-8 bg-black/10 min-h-0 flex flex-col items-center justify-center">
+    <div className="flex-grow p-4 md:p-8 bg-black/10 min-h-0 flex items-center justify-center">
       <div className="w-full h-full flex items-center justify-center">
         {isLoading ? (
             renderLoadingState()
         ) : activeEcho ? (
-          <Card className="max-w-full max-h-full w-auto aspect-[4/5] bg-transparent border-0 shadow-2xl group animate-fade-in relative overflow-hidden">
-             <CardContent className="p-0 h-full w-full">
-              <Image
-                src={activeEcho.src}
-                alt={`Echo of type ${activeEcho.type}`}
-                fill
-                sizes="(max-width: 1024px) 90vw, 50vw"
-                className="object-contain"
-                data-ai-hint="photo memory"
-              />
-              <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full shadow-md transition-opacity duration-300 opacity-0 group-hover:opacity-100">
-                  {getLabelForType(activeEcho.type)}
-              </div>
-              <Button
-                  size="icon"
-                  variant="secondary"
-                  onClick={() => onDownload(activeEcho.src)}
-                  className="absolute bottom-2 right-2 h-10 w-10 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/75 hover:scale-110"
-                  aria-label="Download image"
-              >
-                  <Download className="h-5 w-5" />
-              </Button>
+          <Card className="w-auto h-full bg-transparent border-0 shadow-none group animate-fade-in flex items-center justify-center">
+             <CardContent className="p-0 h-full w-full flex items-center justify-center">
+                <div className="relative w-auto h-full aspect-[4/5]">
+                  <Image
+                    src={activeEcho.src}
+                    alt={`Echo of type ${activeEcho.type}`}
+                    fill
+                    sizes="(max-width: 1024px) 90vw, 50vw"
+                    className="object-contain rounded-lg shadow-2xl"
+                    data-ai-hint="photo memory"
+                  />
+                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full shadow-md transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                      {getLabelForType(activeEcho.type)}
+                  </div>
+                  <Button
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => onDownload(activeEcho.src)}
+                      className="absolute bottom-2 right-2 h-10 w-10 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/75 hover:scale-110"
+                      aria-label="Download image"
+                  >
+                      <Download className="h-5 w-5" />
+                  </Button>
+                </div>
              </CardContent>
           </Card>
         ) : echoesCount > 0 ? (
